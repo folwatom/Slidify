@@ -1,0 +1,80 @@
+---
+title       : Wage growth prediction
+subtitle    : Shiny application
+author      : Tomas Folwarczny
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Wage growth prediction web application
+
+
+- interactive application to predict worker wage growth by age
+- prediction based on data from the March 2011 Supplement to Current Population Survey
+- used linear regression model
+- application created using Shiny platform for R
+- published on [shinyapps.io] (https://folwatom.shinyapps.io/Shiny_proj/) cloud
+
+--- 
+
+## Interface
+
+- application contains two input fields (drop down lists)
+    - Job class
+    - Education level
+    
+- based on selected job class and education level chart is plotted
+    - worker age on x-axis
+    - worker wage on y-axis
+    - wage found out by survey (black points)
+    - wage growth prediction (blue line)
+
+---
+
+## Data set
+
+- used Wage data set from ISLR package
+- variables "jobclass" and "education" used as input
+
+
+```r
+library(ISLR)
+data(Wage)
+summary(Wage[,c('jobclass','education')])
+```
+
+```
+##            jobclass                 education  
+##  1. Industrial :1544   1. < HS Grad      :268  
+##  2. Information:1456   2. HS Grad        :971  
+##                        3. Some College   :650  
+##                        4. College Grad   :685  
+##                        5. Advanced Degree:426
+```
+
+---
+
+## Linear regression
+
+- created data subset (filtered by selected job class and eduction level)
+- used linear model with formula wage ~ age
+- plotted using ggplot2 library 
+
+```r
+        ds <- reactive({subset(Wage,
+                               substring(jobclass,1,1) == input$jobclass &
+                               substring(education,1,1) == input$education    
+                               )})
+        output$plot <- renderPlot({
+            q <- qplot(age, wage, data=ds(), main="Wage growth by age")
+            q <- q + geom_smooth(method="lm", formula=y~x)
+            q 
+        })
+
+```
+
